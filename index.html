@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Macro Calculator + Milk Deduction</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #ddd;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warning: #f39c12; /* Color for the Milk button */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            padding: 20px; /* added padding for small screens */
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 { margin-top: 0; margin-bottom: 1.5rem; color: var(--primary); }
+
+        .input-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .calculated-field {
+            background-color: #e8f5e9;
+            border-color: var(--success);
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+            flex-wrap: wrap; /* Allows buttons to wrap if space is tight */
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        #calcBtn { background-color: var(--primary); color: white; }
+        #clearBtn { background-color: #e0e0e0; color: #555; }
+        
+        /* New Milk Button Styling */
+        #milkBtn { 
+            background-color: var(--warning); 
+            color: white; 
+            flex-basis: 100%; /* Makes it take the full width on a new line if needed */
+        }
+
+        button:hover { opacity: 0.9; }
+
+        #message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.2rem;
+        }
+        .error { color: var(--error); }
+        .info { color: #777; font-style: italic; }
+
+        /* Styles for the new "Minus Milk" box */
+        #adjusted-box {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed var(--error);
+            border-radius: 8px;
+            background-color: #fff5f5;
+            text-align: left;
+        }
+
+        #adjusted-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            color: var(--error);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: var(--error); /* Red Text */
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Macro Calculator</h2>
+    
+    <div class="input-group">
+        <label for="protein">Protein (g)</label>
+        <input type="number" id="protein" placeholder="4 cal/g">
+    </div>
+
+    <div class="input-group">
+        <label for="carbs">Carbs (g)</label>
+        <input type="number" id="carbs" placeholder="4 cal/g">
+    </div>
+
+    <div class="input-group">
+        <label for="fats">Fats (g)</label>
+        <input type="number" id="fats" placeholder="9 cal/g">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+
+    <div class="input-group">
+        <label for="calories">Total Calories (kcal)</label>
+        <input type="number" id="calories" placeholder="Total Energy">
+    </div>
+
+    <div id="message" class="info">Fill 3 fields to calculate, or subtract milk.</div>
+
+    <div class="buttons">
+        <button id="calcBtn" onclick="calculate()">Calculate</button>
+        <button id="clearBtn" onclick="clearFields()">Clear</button>
+        <button id="milkBtn" onclick="subtractMilk()">- Milk</button>
+    </div>
+
+    <div id="adjusted-box">
+        <h3>Adjusted Totals</h3>
+        <div class="stat-row"><span>Protein:</span> <span id="adj-p">0g</span></div>
+        <div class="stat-row"><span>Carbs:</span> <span id="adj-c">0g</span></div>
+        <div class="stat-row"><span>Fats:</span> <span id="adj-f">0g</span></div>
+        <hr style="border-top: 1px dashed #ffcccc;">
+        <div class="stat-row"><span>Calories:</span> <span id="adj-cal">0</span></div>
+    </div>
+</div>
+
+<script>
+    // Constants for Milk deduction
+    const MILK = {
+        p: 6.8,
+        f: 7.8,
+        c: 9.9,
+        cal: 137
+    };
+
+    function calculate() {
+        const pInput = document.getElementById('protein');
+        const cInput = document.getElementById('carbs');
+        const fInput = document.getElementById('fats');
+        const calInput = document.getElementById('calories');
+        const msg = document.getElementById('message');
+
+        // Reset previous styling
+        [pInput, cInput, fInput, calInput].forEach(el => el.classList.remove('calculated-field'));
+        msg.className = '';
+        msg.innerText = '';
+
+        const p = pInput.value === '' ? null : parseFloat(pInput.value);
+        const c = cInput.value === '' ? null : parseFloat(cInput.value);
+        const f = fInput.value === '' ? null : parseFloat(fInput.value);
+        const cal = calInput.value === '' ? null : parseFloat(calInput.value);
+
+        const filledCount = [p, c, f, cal].filter(v => v !== null).length;
+
+        if (filledCount < 3) {
+            msg.innerText = "Please fill in at least 3 fields.";
+            msg.className = "error";
+            return;
+        } 
+        
+        if (filledCount === 4) {
+             msg.innerText = "All fields are full. Clear one to calculate.";
+             msg.className = "error";
+             return;
+        }
+
+        if (cal === null) {
+            const result = (p * 4) + (c * 4) + (f * 9);
+            calInput.value = Math.round(result);
+            calInput.classList.add('calculated-field');
+            msg.innerText = "Calculated Total Calories";
+        } 
+        else if (p === null) {
+            const result = (cal - (c * 4) - (f * 9)) / 4;
+            pInput.value = Math.round(result * 10) / 10;
+            pInput.classList.add('calculated-field');
+            msg.innerText = "Calculated Protein";
+        } 
+        else if (c === null) {
+            const result = (cal - (p * 4) - (f * 9)) / 4;
+            cInput.value = Math.round(result * 10) / 10;
+            cInput.classList.add('calculated-field');
+            msg.innerText = "Calculated Carbs";
+        } 
+        else if (f === null) {
+            const result = (cal - (p * 4) - (c * 4)) / 9;
+            fInput.value = Math.round(result * 10) / 10;
+            fInput.classList.add('calculated-field');
+            msg.innerText = "Calculated Fats";
+        }
+    }
+
+    function subtractMilk() {
+        // Get current values (default to 0 if empty)
+        let p = parseFloat(document.getElementById('protein').value) || 0;
+        let c = parseFloat(document.getElementById('carbs').value) || 0;
+        let f = parseFloat(document.getElementById('fats').value) || 0;
+        let cal = parseFloat(document.getElementById('calories').value) || 0;
+
+        // Subtract Milk Values
+        let newP = p - MILK.p;
+        let newC = c - MILK.c;
+        let newF = f - MILK.f;
+        let newCal = cal - MILK.cal;
+
+        // Display in the adjusted box
+        document.getElementById('adj-p').innerText = newP.toFixed(1) + "g";
+        document.getElementById('adj-c').innerText = newC.toFixed(1) + "g";
+        document.getElementById('adj-f').innerText = newF.toFixed(1) + "g";
+        document.getElementById('adj-cal').innerText = Math.round(newCal);
+
+        // Show the box
+        document.getElementById('adjusted-box').style.display = 'block';
+    }
+
+    function clearFields() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('calculated-field');
+        });
+        document.getElementById('message').innerText = "Fill any 3 fields to find the 4th.";
+        document.getElementById('message').className = "info";
+        document.getElementById('adjusted-box').style.display = 'none'; // Hide the milk box
+    }
+</script>
+
+</body>
+</html>
