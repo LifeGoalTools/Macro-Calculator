@@ -1,16 +1,27 @@
-const cacheName = 'macro-cache-v9';
-const assets = ['./', './index.html', './manifest.json'];
+const cacheName = 'macro-v9-final';
+const assets = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 
 self.addEventListener('install', (e) => {
-  self.skipWaiting(); // Forces the waiting service worker to become active
-  e.waitUntil(caches.open(cacheName).then((cache) => cache.addAll(assets)));
+  self.skipWaiting(); // Forces the new version to take over
+  e.waitUntil(
+    caches.open(cacheName).then((cache) => {
+      return cache.addAll(assets);
+    })
+  );
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim()); // Immediately take control of all open tabs
+  event.waitUntil(clients.claim()); // Immediate control
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
-
+  e.respondWith(
+    caches.match(e.request).then((res) => {
+      return res || fetch(e.request);
+    })
+  );
 });
