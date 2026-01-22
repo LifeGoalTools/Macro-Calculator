@@ -1,4 +1,4 @@
-const cacheName = 'macro-cache-v6';
+const cacheName = 'macro-cache-v7';
 const assets = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
