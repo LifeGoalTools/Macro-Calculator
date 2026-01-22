@@ -2,41 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f4f7f6">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#f4f7f6">
-    <title>Macro Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Macro Solver</title>
+    
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f4f7f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <style>
-        :root { --primary: #4a90e2; --bg: #f4f7f6; --card-bg: #ffffff; --text: #333; --border: #ddd; --success: #2ecc71; --error: #e74c3c; --warning: #f39c12; }
-        body { font-family: sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 10px; }
-        .container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; margin-top: 10px; }
-        .input-group { margin-bottom: 1rem; text-align: left; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-        input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .calculated-field { background-color: #e8f5e9; border-color: var(--success); color: var(--success); font-weight: bold; }
-        .buttons { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        :root {
+            --primary: #4a90e2;
+            --bg: #f4f7f6; /* This is the uniform background color */
+            --card-bg: #ffffff;
+            --text: #333;
+            --border: #ddd;
+            --success: #2ecc71;
+            --error: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        /* Forces the background color to fill the entire screen, top to bottom */
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Keeps the app near the top */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            margin-top: 10px; /* Adjust this to move the app up/down */
+        }
+
+        h2 { margin: 0 0 1.5rem 0; color: var(--primary); }
+
+        .input-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .calculated-field {
+            background-color: #e8f5e9;
+            border-color: var(--success);
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
         #calcBtn { background-color: var(--primary); color: white; }
-        #clearBtn { background-color: #e0e0e0; }
-        #milkBtn { background-color: var(--warning); color: white; flex-basis: 100%; }
-        #adjusted-box { display: none; margin-top: 20px; padding: 15px; border: 2px dashed var(--error); border-radius: 8px; background-color: #fff5f5; text-align: left; }
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--error); font-weight: bold; }
-        
-        /* DIAGNOSTIC STYLE */
-        #status-bar { margin-top: 20px; font-size: 0.8rem; padding: 10px; border-top: 1px solid #eee; }
+        #clearBtn { background-color: #e0e0e0; color: #555; }
+        #milkBtn { 
+            background-color: var(--warning); 
+            color: white; 
+            flex-basis: 100%; 
+            margin-top: 5px;
+        }
+
+        #adjusted-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed var(--error);
+            border-radius: 8px;
+            background-color: #fff5f5;
+            text-align: left;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: var(--error);
+            font-weight: bold;
+        }
+
+        #status-bar {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #999;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Macro Calculator</h2>
-    <div class="input-group"><label>Protein (g)</label><input type="number" id="protein"></div>
-    <div class="input-group"><label>Carbs (g)</label><input type="number" id="carbs"></div>
-    <div class="input-group"><label>Fats (g)</label><input type="number" id="fats"></div>
-    <hr>
-    <div class="input-group"><label>Total Calories</label><input type="number" id="calories"></div>
+    <h2>Macro Solver</h2>
     
+    <div class="input-group">
+        <label>Protein (g)</label>
+        <input type="number" id="protein" placeholder="0">
+    </div>
+
+    <div class="input-group">
+        <label>Carbs (g)</label>
+        <input type="number" id="carbs" placeholder="0">
+    </div>
+
+    <div class="input-group">
+        <label>Fats (g)</label>
+        <input type="number" id="fats" placeholder="0">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+
+    <div class="input-group">
+        <label>Total Calories (kcal)</label>
+        <input type="number" id="calories" placeholder="0">
+    </div>
+
     <div class="buttons">
         <button id="calcBtn" onclick="calculate()">Calculate</button>
         <button id="clearBtn" onclick="clearFields()">Clear</button>
@@ -44,31 +167,59 @@
     </div>
 
     <div id="adjusted-box">
-        <h3 style="color: var(--error); margin-top: 0;">Adjusted Totals</h3>
+        <h3 style="color: var(--error); margin: 0 0 10px 0; font-size: 1rem;">Adjusted Totals (Red)</h3>
         <div class="stat-row"><span>Protein:</span> <span id="adj-p">0g</span></div>
         <div class="stat-row"><span>Carbs:</span> <span id="adj-c">0g</span></div>
         <div class="stat-row"><span>Fats:</span> <span id="adj-f">0g</span></div>
         <div class="stat-row"><span>Calories:</span> <span id="adj-cal">0</span></div>
     </div>
 
-    <div id="status-bar">Waiting for system...</div>
+    <div id="status-bar">Checking system...</div>
 </div>
 
 <script>
     const MILK = { p: 6.8, f: 7.8, c: 9.9, cal: 137 };
-    const status = document.getElementById('status-bar');
+    const statusBar = document.getElementById('status-bar');
 
     function calculate() {
-        const pI = document.getElementById('protein'), cI = document.getElementById('carbs'), fI = document.getElementById('fats'), calI = document.getElementById('calories');
-        const p = pI.value === '' ? null : parseFloat(pI.value), c = cI.value === '' ? null : parseFloat(cI.value), f = fI.value === '' ? null : parseFloat(fI.value), cal = calI.value === '' ? null : parseFloat(calI.value);
-        if (cal === null) { calI.value = Math.round((p*4)+(c*4)+(f*9)); calI.classList.add('calculated-field'); }
-        else if (p === null) { pI.value = ((cal-(c*4)-(f*9))/4).toFixed(1); pI.classList.add('calculated-field'); }
-        else if (c === null) { cI.value = ((cal-(p*4)-(f*9))/4).toFixed(1); cI.classList.add('calculated-field'); }
-        else if (f === null) { fI.value = ((cal-(p*4)-(c*4))/9).toFixed(1); fI.classList.add('calculated-field'); }
+        const pInput = document.getElementById('protein');
+        const cInput = document.getElementById('carbs');
+        const fInput = document.getElementById('fats');
+        const calInput = document.getElementById('calories');
+
+        // Reset calculated style
+        [pInput, cInput, fInput, calInput].forEach(el => el.classList.remove('calculated-field'));
+
+        const p = pInput.value === '' ? null : parseFloat(pInput.value);
+        const c = cInput.value === '' ? null : parseFloat(cInput.value);
+        const f = fInput.value === '' ? null : parseFloat(fInput.value);
+        const cal = calInput.value === '' ? null : parseFloat(calInput.value);
+
+        const filled = [p, c, f, cal].filter(v => v !== null).length;
+
+        if (filled !== 3) return;
+
+        if (cal === null) {
+            calInput.value = Math.round((p * 4) + (c * 4) + (f * 9));
+            calInput.classList.add('calculated-field');
+        } else if (p === null) {
+            pInput.value = ((cal - (c * 4) - (f * 9)) / 4).toFixed(1);
+            pInput.classList.add('calculated-field');
+        } else if (c === null) {
+            cInput.value = ((cal - (p * 4) - (f * 9)) / 4).toFixed(1);
+            cInput.classList.add('calculated-field');
+        } else if (f === null) {
+            fInput.value = ((cal - (p * 4) - (c * 4)) / 9).toFixed(1);
+            fInput.classList.add('calculated-field');
+        }
     }
 
     function subtractMilk() {
-        let p = parseFloat(document.getElementById('protein').value) || 0, c = parseFloat(document.getElementById('carbs').value) || 0, f = parseFloat(document.getElementById('fats').value) || 0, cal = parseFloat(document.getElementById('calories').value) || 0;
+        let p = parseFloat(document.getElementById('protein').value) || 0;
+        let c = parseFloat(document.getElementById('carbs').value) || 0;
+        let f = parseFloat(document.getElementById('fats').value) || 0;
+        let cal = parseFloat(document.getElementById('calories').value) || 0;
+
         document.getElementById('adj-p').innerText = (p - MILK.p).toFixed(1) + "g";
         document.getElementById('adj-c').innerText = (c - MILK.c).toFixed(1) + "g";
         document.getElementById('adj-f').innerText = (f - MILK.f).toFixed(1) + "g";
@@ -76,23 +227,32 @@
         document.getElementById('adjusted-box').style.display = 'block';
     }
 
-    function clearFields() { document.querySelectorAll('input').forEach(i => {i.value=''; i.classList.remove('calculated-field');}); document.getElementById('adjusted-box').style.display='none'; }
-    
-    // OFFLINE & APP DETECTION
+    function clearFields() {
+        document.querySelectorAll('input').forEach(i => {
+            i.value = '';
+            i.classList.remove('calculated-field');
+        });
+        document.getElementById('adjusted-box').style.display = 'none';
+    }
+
+    // SERVICE WORKER LOGIC
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-        .then(() => { status.innerText = "✓ App Mode Registered"; status.style.color = "green"; })
-        .catch((err) => { status.innerText = "✗ Service Worker Error"; status.style.color = "red"; });
-    } else {
-        status.innerText = "✗ PWA Not Supported";
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then((reg) => {
+                statusBar.innerText = "✓ System Ready";
+                statusBar.style.color = "green";
+            }).catch(err => {
+                statusBar.innerText = "✗ Registration Failed";
+            });
+        });
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        status.innerText = "⭐ App Install Ready!";
-        status.style.fontWeight = "bold";
-        status.style.color = "blue";
+        statusBar.innerText = "⭐ App Install Ready!";
+        statusBar.style.color = "blue";
+        statusBar.style.fontWeight = "bold";
     });
 </script>
-</body>
 
+</body>
 </html>
