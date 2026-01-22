@@ -1,4 +1,4 @@
-const cacheName = 'macro-cache-v8';
+const cacheName = 'macro-cache-v9';
 const assets = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {
@@ -12,4 +12,5 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (e) => {
   e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+
 });
