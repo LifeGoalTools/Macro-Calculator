@@ -7,8 +7,8 @@
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #4a90e2; --bg: #f4f7f6; --card-bg: #ffffff; --text: #333; --border: #ddd; --success: #2ecc71; --error: #e74c3c; --warning: #f39c12; }
-        body { font-family: sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .container { background-color: var(--card-bg); padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        body { font-family: sans-serif; background-color: var(--bg); display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 10px; }
+        .container { background-color: var(--card-bg); padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; margin-top: 10px; }
         .input-group { margin-bottom: 1rem; text-align: left; }
         label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
         input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
@@ -20,32 +20,41 @@
         #milkBtn { background-color: var(--warning); color: white; flex-basis: 100%; }
         #adjusted-box { display: none; margin-top: 20px; padding: 15px; border: 2px dashed var(--error); border-radius: 8px; background-color: #fff5f5; text-align: left; }
         .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: var(--error); font-weight: bold; }
+        
+        /* DIAGNOSTIC STYLE */
+        #status-bar { margin-top: 20px; font-size: 0.8rem; padding: 10px; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h2>Macro Calculator</h2>
     <div class="input-group"><label>Protein (g)</label><input type="number" id="protein"></div>
     <div class="input-group"><label>Carbs (g)</label><input type="number" id="carbs"></div>
     <div class="input-group"><label>Fats (g)</label><input type="number" id="fats"></div>
-    <hr><div class="input-group"><label>Total Calories</label><input type="number" id="calories"></div>
-    <div id="message"></div>
+    <hr>
+    <div class="input-group"><label>Total Calories</label><input type="number" id="calories"></div>
+    
     <div class="buttons">
         <button id="calcBtn" onclick="calculate()">Calculate</button>
         <button id="clearBtn" onclick="clearFields()">Clear</button>
         <button id="milkBtn" onclick="subtractMilk()">- Milk</button>
     </div>
+
     <div id="adjusted-box">
-        <h3>Adjusted Totals</h3>
+        <h3 style="color: var(--error); margin-top: 0;">Adjusted Totals</h3>
         <div class="stat-row"><span>Protein:</span> <span id="adj-p">0g</span></div>
         <div class="stat-row"><span>Carbs:</span> <span id="adj-c">0g</span></div>
         <div class="stat-row"><span>Fats:</span> <span id="adj-f">0g</span></div>
         <div class="stat-row"><span>Calories:</span> <span id="adj-cal">0</span></div>
     </div>
+
+    <div id="status-bar">Waiting for system...</div>
 </div>
 
 <script>
-const MILK = { p: 6.8, f: 7.8, c: 9.9, cal: 137 };
+    const MILK = { p: 6.8, f: 7.8, c: 9.9, cal: 137 };
+    const status = document.getElementById('status-bar');
 
     function calculate() {
         const pI = document.getElementById('protein'), cI = document.getElementById('carbs'), fI = document.getElementById('fats'), calI = document.getElementById('calories');
@@ -67,29 +76,19 @@ const MILK = { p: 6.8, f: 7.8, c: 9.9, cal: 137 };
 
     function clearFields() { document.querySelectorAll('input').forEach(i => {i.value=''; i.classList.remove('calculated-field');}); document.getElementById('adjusted-box').style.display='none'; }
     
-    // --- DIAGNOSTIC SERVICE WORKER SECTION ---
-    const msg = document.getElementById('message');
-
+    // OFFLINE & APP DETECTION
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js')
-        .then((reg) => {
-            msg.innerText = "✓ System Ready (App Mode Active)";
-            msg.style.color = "green";
-            console.log("SW Registered");
-        })
-        .catch((err) => {
-            msg.innerText = "✗ System Error: Service Worker failed";
-            msg.style.color = "red";
-            console.log("SW Failed", err);
-        });
+        .then(() => { status.innerText = "✓ App Mode Registered"; status.style.color = "green"; })
+        .catch((err) => { status.innerText = "✗ Service Worker Error"; status.style.color = "red"; });
     } else {
-        msg.innerText = "✗ Browser does not support App Mode";
+        status.innerText = "✗ PWA Not Supported";
     }
 
-    // Capture the 'Install' prompt event
     window.addEventListener('beforeinstallprompt', (e) => {
-        msg.innerText = "⭐ Tap 'Install' in your Menu now!";
-        msg.style.fontWeight = "bold";
+        status.innerText = "⭐ App Install Ready!";
+        status.style.fontWeight = "bold";
+        status.style.color = "blue";
     });
 </script>
 </body>
