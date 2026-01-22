@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Macro Solver</title>
+    <title>Macro Calculator</title>
+    
+    <meta name="theme-color" content="#f4f7f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#f4f7f6">
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f4f7f6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     <style>
         :root {
             --primary: #4a90e2;
-            --bg: #f4f7f6; /* This is the uniform background color */
+            --bg: #f4f7f6; /* Your uniform color */
             --card-bg: #ffffff;
             --text: #333;
             --border: #ddd;
@@ -22,20 +23,23 @@
             --warning: #f39c12;
         }
 
-        /* Forces the background color to fill the entire screen, top to bottom */
-        html, body {
+        /* This ensures the background color is hard-coded into the browser layers */
+        html {
+            background-color: var(--bg);
             height: 100%;
             margin: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
+            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Keeps the app near the top */
-            padding: 20px;
+            align-items: flex-start;
+            min-height: 100vh;
+            /* env(safe-area-inset) forces the app to fill the gaps around notches and home bars */
+            padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom) 20px;
             box-sizing: border-box;
         }
 
@@ -47,23 +51,14 @@
             width: 100%;
             max-width: 350px;
             text-align: center;
-            margin-top: 10px; /* Adjust this to move the app up/down */
+            margin-top: 20px;
         }
 
-        h2 { margin: 0 0 1.5rem 0; color: var(--primary); }
+        h2 { margin: 0 0 1.2rem 0; color: var(--primary); font-size: 1.5rem; }
 
-        .input-group {
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
+        .input-group { margin-bottom: 1rem; text-align: left; }
+        label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.85rem; }
+        
         input {
             width: 100%;
             padding: 12px;
@@ -71,45 +66,36 @@
             border-radius: 8px;
             box-sizing: border-box;
             font-size: 1rem;
+            background: white;
+            -webkit-appearance: none; /* Fixes iOS shadows */
         }
 
         .calculated-field {
-            background-color: #e8f5e9;
-            border-color: var(--success);
-            color: var(--success);
+            background-color: #e8f5e9 !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
             font-weight: bold;
         }
 
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 1.5rem;
-            flex-wrap: wrap;
-        }
-
+        .buttons { display: flex; gap: 10px; margin-top: 1.2rem; flex-wrap: wrap; }
+        
         button {
             flex: 1;
             padding: 14px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: opacity 0.2s;
+            font-size: 0.95rem;
+            font-weight: 700;
         }
 
         #calcBtn { background-color: var(--primary); color: white; }
-        #clearBtn { background-color: #e0e0e0; color: #555; }
-        #milkBtn { 
-            background-color: var(--warning); 
-            color: white; 
-            flex-basis: 100%; 
-            margin-top: 5px;
-        }
+        #clearBtn { background-color: #e0e0e0; color: #444; }
+        #milkBtn { background-color: var(--warning); color: white; flex-basis: 100%; margin-top: 4px; }
 
         #adjusted-box {
             display: none;
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 15px;
             border: 2px dashed var(--error);
             border-radius: 8px;
@@ -117,47 +103,35 @@
             text-align: left;
         }
 
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            color: var(--error);
-            font-weight: bold;
-        }
-
-        #status-bar {
-            margin-top: 20px;
-            font-size: 0.75rem;
-            color: #999;
-            font-style: italic;
-        }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--error); font-weight: bold; }
+        #status-bar { margin-top: 15px; font-size: 0.7rem; color: #aaa; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Macro Solver</h2>
+    <h2>Macro Calculator</h2>
     
     <div class="input-group">
         <label>Protein (g)</label>
-        <input type="number" id="protein" placeholder="0">
+        <input type="number" id="protein" placeholder="Enter protein">
     </div>
 
     <div class="input-group">
         <label>Carbs (g)</label>
-        <input type="number" id="carbs" placeholder="0">
+        <input type="number" id="carbs" placeholder="Enter carbs">
     </div>
 
     <div class="input-group">
         <label>Fats (g)</label>
-        <input type="number" id="fats" placeholder="0">
+        <input type="number" id="fats" placeholder="Enter fats">
     </div>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+    <hr style="border:0; border-top:1px solid #eee; margin: 1rem 0;">
 
     <div class="input-group">
-        <label>Total Calories (kcal)</label>
-        <input type="number" id="calories" placeholder="0">
+        <label>Total Calories</label>
+        <input type="number" id="calories" placeholder="Total kcal">
     </div>
 
     <div class="buttons">
@@ -167,50 +141,43 @@
     </div>
 
     <div id="adjusted-box">
-        <h3 style="color: var(--error); margin: 0 0 10px 0; font-size: 1rem;">Adjusted Totals (Red)</h3>
+        <h3 style="color: var(--error); margin: 0 0 10px 0; font-size: 0.9rem;">Adjusted Total</h3>
         <div class="stat-row"><span>Protein:</span> <span id="adj-p">0g</span></div>
         <div class="stat-row"><span>Carbs:</span> <span id="adj-c">0g</span></div>
-        <div class="stat-row"><span>Fats:</span> <span id="adj-f">0g</span></div>
+        <div class="stat-row) "><span>Fats:</span> <span id="adj-f">0g</span></div>
         <div class="stat-row"><span>Calories:</span> <span id="adj-cal">0</span></div>
     </div>
 
-    <div id="status-bar">Checking system...</div>
+    <div id="status-bar">Syncing...</div>
 </div>
 
 <script>
     const MILK = { p: 6.8, f: 7.8, c: 9.9, cal: 137 };
-    const statusBar = document.getElementById('status-bar');
+    const statusBox = document.getElementById('status-bar');
 
     function calculate() {
-        const pInput = document.getElementById('protein');
-        const cInput = document.getElementById('carbs');
-        const fInput = document.getElementById('fats');
-        const calInput = document.getElementById('calories');
+        const pI = document.getElementById('protein'), cI = document.getElementById('carbs'), 
+              fI = document.getElementById('fats'), calI = document.getElementById('calories');
+        
+        [pI, cI, fI, calI].forEach(el => el.classList.remove('calculated-field'));
 
-        // Reset calculated style
-        [pInput, cInput, fInput, calInput].forEach(el => el.classList.remove('calculated-field'));
-
-        const p = pInput.value === '' ? null : parseFloat(pInput.value);
-        const c = cInput.value === '' ? null : parseFloat(cInput.value);
-        const f = fInput.value === '' ? null : parseFloat(fInput.value);
-        const cal = calInput.value === '' ? null : parseFloat(calInput.value);
-
-        const filled = [p, c, f, cal].filter(v => v !== null).length;
-
-        if (filled !== 3) return;
+        const p = pI.value === '' ? null : parseFloat(pI.value);
+        const c = cI.value === '' ? null : parseFloat(cI.value);
+        const f = fI.value === '' ? null : parseFloat(fI.value);
+        const cal = calI.value === '' ? null : parseFloat(calI.value);
 
         if (cal === null) {
-            calInput.value = Math.round((p * 4) + (c * 4) + (f * 9));
-            calInput.classList.add('calculated-field');
+            calI.value = Math.round((p*4)+(c*4)+(f*9));
+            calI.classList.add('calculated-field');
         } else if (p === null) {
-            pInput.value = ((cal - (c * 4) - (f * 9)) / 4).toFixed(1);
-            pInput.classList.add('calculated-field');
+            pI.value = ((cal-(c*4)-(f*9))/4).toFixed(1);
+            pI.classList.add('calculated-field');
         } else if (c === null) {
-            cInput.value = ((cal - (p * 4) - (f * 9)) / 4).toFixed(1);
-            cInput.classList.add('calculated-field');
+            cI.value = ((cal-(p*4)-(f*9))/4).toFixed(1);
+            cI.classList.add('calculated-field');
         } else if (f === null) {
-            fInput.value = ((cal - (p * 4) - (c * 4)) / 9).toFixed(1);
-            fInput.classList.add('calculated-field');
+            fI.value = ((cal-(p*4)-(c*4))/9).toFixed(1);
+            fI.classList.add('calculated-field');
         }
     }
 
@@ -219,7 +186,6 @@
         let c = parseFloat(document.getElementById('carbs').value) || 0;
         let f = parseFloat(document.getElementById('fats').value) || 0;
         let cal = parseFloat(document.getElementById('calories').value) || 0;
-
         document.getElementById('adj-p').innerText = (p - MILK.p).toFixed(1) + "g";
         document.getElementById('adj-c').innerText = (c - MILK.c).toFixed(1) + "g";
         document.getElementById('adj-f').innerText = (f - MILK.f).toFixed(1) + "g";
@@ -228,31 +194,21 @@
     }
 
     function clearFields() {
-        document.querySelectorAll('input').forEach(i => {
-            i.value = '';
-            i.classList.remove('calculated-field');
-        });
+        document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('calculated-field'); });
         document.getElementById('adjusted-box').style.display = 'none';
     }
 
-    // SERVICE WORKER LOGIC
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then((reg) => {
-                statusBar.innerText = "✓ System Ready";
-                statusBar.style.color = "green";
-            }).catch(err => {
-                statusBar.innerText = "✗ Registration Failed";
-            });
+        navigator.serviceWorker.register('sw.js').then(() => {
+            statusBox.innerText = "✓ System Ready";
+            statusBox.style.color = "green";
         });
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        statusBar.innerText = "⭐ App Install Ready!";
-        statusBar.style.color = "blue";
-        statusBar.style.fontWeight = "bold";
+        statusBox.innerText = "⭐ App Install Ready!";
+        statusBox.style.color = "blue";
     });
 </script>
-
 </body>
 </html>
