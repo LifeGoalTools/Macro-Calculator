@@ -1,4 +1,4 @@
-const CACHE_NAME = 'macro-calc-v18'; // Increment this number every time you update index.html
+const CACHE_NAME = 'macro-calc-v19'; // Increment this number every time you update index.html
 const ASSETS = [
   './',
   './index.html',
@@ -31,5 +31,6 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((response) => response || fetch(event.request))
   );
 });
+
 
 
